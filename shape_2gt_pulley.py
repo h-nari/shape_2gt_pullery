@@ -69,14 +69,14 @@ if __name__ == '__main__':
     pullery = gen(args.num_of_teeth, div=args.div, calc_scale=args.calc_scale,
                   offset=args.offset)
 
-    pullery.scale( 25.4 / args.dpi )
+    pullery.scale( args.dpi / 25.4)
     pullery.stroke('black', '0.25px').fill('none')
     svg.add(pullery)
 
     line = svgGen.SvgPolygon()
     line.lineTo(0,0)
     line.lineTo(0,10)
-    line.scale(25.4 / args.dpi)
+    line.scale(args.dpi / 25.4)
     line.stroke('red','1px').fill('none')
     svg.add(line)
 
