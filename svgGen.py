@@ -45,6 +45,10 @@ class SvgPolygon(SvgObj):
             return self.points[-1]
         else:
             [Nan,Nan]
+
+    def append(self,pt):
+        self.points.append(pt)
+        return self
             
     def lineTo(self,x,y):
         self.points.append([x,y])
@@ -127,7 +131,40 @@ class SvgCircle(SvgPolygon):
         for a in range(0,360,step):
             a2 = a / 180.0 * math.pi
             self.lineTo( r * math.cos(a2), r * math.sin(a2))
-        
+
+class SvgPath(SvgObj):
+    def __init__(self):
+        super().__init__()
+        self.d = ""
+
+    def svg(self):
+        s = "<path"
+        for i in self.dict.items():
+            s += ' ' + i[0] + '="' + str(i[1]) + '"'
+            
+        s += " d='"
+        s += self.d
+        s += "' />\n"
+        return s
+
+    def closePath(self):
+        self.d += "Z "
+        return self
+    
+    def moveTo(self, pt):
+        self.d += "M %f %f " % (pt[0],pt[1])
+        return self
+    
+    def lineTo(self, pt):
+        self.d += "L %f %f " % (pt[0],pt[1])
+        return self
+    
+    def curveTo(self, p1,p2,p3):
+        self.d += "C %f %f %f %f %f %f "%(p1[0],p1[1],p2[0],p2[1],p3[0],p3[1])
+
+    def scale(self, s):
+        self.dict.setdefault('transform','')
+        self.dict['transform'] += " scale(%f)" % s
         
 class SvgGroup(SvgObj):
     def __init__(self):
