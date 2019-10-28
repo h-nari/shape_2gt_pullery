@@ -14,7 +14,7 @@ def computeTangent(u, v):
 
 def fitCubic(pts, tHat1, tHat2, error):
     maxIterations = 4
-    iterationError = error * error
+    iterationError = error * 4
 
     if(len(pts) == 2):
         dist = np.linalg.norm(pts[0] - pts[1]) / 3.0
@@ -31,7 +31,7 @@ def fitCubic(pts, tHat1, tHat2, error):
         for i in range(maxIterations):
             uPrime = reparameterize(pts, u, bezCurve)
             bezCurve = generateBezier(pts, uPrime, tHat1, tHat2)
-            maxError,splitPoint = computeMaxError(pts, bezCurve, prime)
+            maxError,splitPoint = computeMaxError(pts, bezCurve, uPrime)
             if maxError < error:
                 return bezCurve
             u = uPrime
@@ -126,7 +126,7 @@ def newtonRaphsonRootFind(q, p, u):
     q2_u = bezierII(1, q2, u)
 
     numerator = np.dot(q_u - p, q1_u)
-    denominotor = np.dot(q1_u, q1_u) + np.dot(q_u - p, q2_u)
+    denominator = np.dot(q1_u, q1_u) + np.dot(q_u - p, q2_u)
     return u - numerator / denominator;
 
 
