@@ -82,7 +82,6 @@ def generateBezier(pts, uPrime, tHat1, tHat2):
     alpha_r = det_c0_x / det_c0_c1
 
     if alpha_l < 1.0e-6 or alpha_r < 1.0e-6:
-        print('pts[0]:',pts[0],'pts[-1]:',pts[-1])
         dist = np.linalg.norm(pts[0] - pts[-1]) / 3.0
         alpha_l = alpha_r = dist
 

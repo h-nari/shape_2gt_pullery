@@ -9,8 +9,8 @@ import fc
 
 norm = np.linalg.norm
 
-def gen(num_of_teeth, div=4, offset=0, calc_scale=10000, error=0.05,
-        no_bezier=False ):
+def gen(num_of_teeth, div=4, calc_scale=10000, error=0.05,
+        no_bezier=False, verbose=True ):
     tp = 2.0
     nt = num_of_teeth
     rp = nt * tp / math.pi / 2  # pitch radius
@@ -51,16 +51,13 @@ def gen(num_of_teeth, div=4, offset=0, calc_scale=10000, error=0.05,
 
     p = svgGen.SvgPolygon();
     p.addPolygon(result[0])
-
     p.scale( 1 / calc_scale)
+
+    if no_bezier:
+        if verbose:
+            print('number of vertices:', len(p.points))
+        return p
     
-    g = svgGen.SvgGroup()
-    p.attr('stroke','blue')
-    g.add(p);
-
-    g.attr('stroke-width','0.01').attr('fill','none')
-    g.attr("transform","translate(200 700) scale(100)")
-
     for i in range(len(p.points)):
         if p.points[i][0] == 0.0 and p.points[i][1] == 0.0:
             pos = i
@@ -68,13 +65,12 @@ def gen(num_of_teeth, div=4, offset=0, calc_scale=10000, error=0.05,
         
     pts = p.points[i+1:]
     pts.extend(p.points[:i])
-
     biz = fc.fitCurve(pts, error)
-    print('len:',(len(biz)-1)/3)
+    
+    if verbose:
+        print('number of curves:',(int(len(biz)-1)/3)*2*nt )
     
     b = svgGen.SvgPath()
-    b.attr('stroke','green')
-    g.add(b);
 
     template = np.empty([len(biz)*2-1,2])
     center = len(biz)-1;
@@ -100,13 +96,7 @@ def gen(num_of_teeth, div=4, offset=0, calc_scale=10000, error=0.05,
         for j in range(1, len(rtemp), 3):
             b.curveTo(rtemp[j],rtemp[j+1],rtemp[j+2])
     b.closePath()
-
-    svg = svgGen.SvgGen();
-    svg.add(g);
-    svg.write(',test.svg');
-    
     return b
-
     
     
 if __name__ == '__main__':
@@ -114,13 +104,16 @@ if __name__ == '__main__':
     parser = argparse.ArgumentParser(
         description='generate 2gt pulley shape svg file')
     parser.add_argument('num_of_teeth', type=int)
-    parser.add_argument('--dpi', type=float, default=96.0 )
-    parser.add_argument('-d','--div', type=int, default=10)
-    parser.add_argument('--offset', type=float, default=0.0);
-    parser.add_argument('-o','--outfile')
-    parser.add_argument('--calc_scale', type=float, default=10000.0) 
-    parser.add_argument('-e','--bezierError', type=float, default=0.05)
+    parser.add_argument('--dpi', type=float, default=96.0,
+                        help='dot per inch value,to convert mm to px in SVG')
+    parser.add_argument('-d','--div', type=int, default=10, metavar='N')
+    parser.add_argument('-o','--outfile',metavar='FILE')
+    parser.add_argument('--calc_scale', type=float, default=10000.0,
+                        metavar='S') 
+    parser.add_argument('-e','--bezierError', type=float, default=0.05,
+                        metavar='E')
     parser.add_argument('-n','--noBezier', action='store_true')
+    parser.add_argument('-q','--quiet', action='store_true')
     
     
     args = parser.parse_args()
@@ -132,11 +125,12 @@ if __name__ == '__main__':
         
     svg = svgGen.SvgGen()
     pullery = gen(args.num_of_teeth, div=args.div, calc_scale=args.calc_scale,
-                  offset=args.offset, error=args.bezierError,
-                  no_bezier=args.noBezier)
+                  error=args.bezierError, no_bezier=args.noBezier,
+                  verbose= not args.quiet)
 
-    pullery.scale( args.dpi / 25.4)
-    pullery.stroke('black', '0.25px').fill('none')
+    s = args.dpi / 25.4
+    pullery.scale( s)
+    pullery.stroke('black', 0.25 / s).fill('none')
     svg.add(pullery)
 
     line = svgGen.SvgPolygon()
